@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Learning Shift | AI & Society</title>
+    <meta name="description" content="An interactive exploration of how AI is fundamentally rewiring human learning, academic integrity, and cognitive dependence.">
+    <meta property="og:title" content="The Learning Shift | AI & Society">
+    <meta property="og:description" content="Explore the psychological shift and academic implications of AI dependence in education.">
+    <meta property="og:type" content="website">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;600;700&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="noise-overlay"></div>
+    <div id="cursor-glow"></div>
+
+    <nav class="glass-nav">
+        <div class="logo">LS // AI</div>
+        <ul class="nav-links">
+            <li><a href="#shift">The Shift</a></li>
+            <li><a href="#data">Impact</a></li>
+            <li><a href="#voices">Voices</a></li>
+            <li><a href="#future">Future</a></li>
+        </ul>
+    </nav>
+
+    <main>
+        <header id="hero" class="perspective-container">
+            <div class="grid-floor"></div>
+            <div class="hero-content parallax-layer" data-speed="0.2">
+                <h1 class="hero-title">
+                    <span class="gradient-text">THE LEARNING</span><br>
+                    SHIFT<span class="blink">_</span>
+                </h1>
+                <p class="typewriter-text" id="typewriter"></p>
+                <div class="scroll-indicator">
+                    <span>Explore Data</span>
+                    <div class="mouse">
+                        <div class="wheel"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="floating-particles" id="particles"></div>
+        </header>
+
+        <section id="shift" class="perspective-container">
+            <div class="section-header reveal">
+                <h2>01. COGNITIVE OFFLOADING</h2>
+                <p>Are we augmenting intelligence, or outsourcing thought?</p>
+            </div>
+            <div class="card-grid">
+                <div class="tilt-card glass-panel reveal" data-delay="100">
+                    <div class="card-glow"></div>
+                    <div class="icon-3d">🧠</div>
+                    <h3>The Outsource Effect</h3>
+                    <p>As students rely on LLMs for synthesis, neural pathways for critical analysis risk atrophy. We are trading deep comprehension for rapid output.</p>
+                </div>
+                <div class="tilt-card glass-panel reveal" data-delay="200">
+                    <div class="card-glow"></div>
+                    <div class="icon-3d">⚡</div>
+                    <h3>Frictionless Illusion</h3>
+                    <p>Learning requires friction. AI removes the struggle of blank pages, inadvertently masking the necessary pain of genuine skill acquisition.</p>
+                </div>
+                <div class="tilt-card glass-panel reveal" data-delay="300">
+                    <div class="card-glow"></div>
+                    <div class="icon-3d">👁️</div>
+                    <h3>Algorithmic Echoes</h3>
+                    <p>Homogenization of thought. When a generation relies on identical systemic weights to draft essays, unique human voice degrades.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="data" class="parallax-section">
+            <div class="bg-sphere parallax-layer" data-speed="-0.1"></div>
+            <div class="section-header reveal">
+                <h2>02. THE METRICS OF DEPENDENCE</h2>
+            </div>
+            <div class="stats-container">
+                <div class="stat-box tilt-card reveal">
+                    <div class="stat-number" data-target="82">0</div><span class="percent">%</span>
+                    <p>Students use generative AI weekly for coursework</p>
+                    <div class="progress-3d"><div class="bar" data-width="82%"></div></div>
+                </div>
+                <div class="stat-box tilt-card reveal" data-delay="150">
+                    <div class="stat-number" data-target="64">0</div><span class="percent">%</span>
+                    <p>Report decreased confidence in independent writing</p>
+                    <div class="progress-3d"><div class="bar" data-width="64%"></div></div>
+                </div>
+                <div class="stat-box tilt-card reveal" data-delay="300">
+                    <div class="stat-number" data-target="3x">0</div><span class="percent">x</span>
+                    <p>Increase in AI-assisted academic submissions YoY</p>
+                    <div class="progress-3d"><div class="bar" data-width="100%"></div></div>
+                </div>
+            </div>
+        </section>
+
+        <section id="voices" class="perspective-container">
+            <div class="section-header reveal">
+                <h2>03. THE FRONTLINE</h2>
+            </div>
+            <div class="slider-container reveal">
+                <div class="slider-track" id="testimonial-slider">
+                    <div class="testimonial-card glass-panel">
+                        <p class="quote">"I don't know how to start an essay anymore without asking for an outline first. The blank page terrifies me now."</p>
+                        <span class="author">— Undergrad, Literature</span>
+                    </div>
+                    <div class="testimonial-card glass-panel">
+                        <p class="quote">"It's like having a calculator for words. But unlike math, I feel like I'm forgetting how the formula actually works."</p>
+                        <span class="author">— High School Senior</span>
+                    </div>
+                    <div class="testimonial-card glass-panel">
+                        <p class="quote">"I use it to debug code instantly. I build faster, but I understand the deep architecture significantly less."</p>
+                        <span class="author">— CS Major, Year 3</span>
+                    </div>
+                </div>
+                <div class="slider-controls">
+                    <button id="prev-btn" class="magnetic-btn" aria-label="Previous">❮</button>
+                    <button id="next-btn" class="magnetic-btn" aria-label="Next">❯</button>
+                </div>
+            </div>
+        </section>
+
+        <section id="interactive" class="perspective-container">
+            <div class="section-header reveal">
+                <h2>04. SIMULATED SYNTHESIS</h2>
+                <p>Interact with the localized neural core.</p>
+            </div>
+            <div class="terminal-interface tilt-card reveal">
+                <div class="terminal-header">
+                    <div class="dots"><span></span><span></span><span></span></div>
+                    <div class="terminal-title">SYNTHESIS_ENGINE_v4</div>
+                </div>
+                <div class="terminal-body" id="terminal-body">
+                    <div class="line sys">System initialized. Waiting for input...</div>
+                </div>
+                <div class="terminal-input-area">
+                    <button id="trigger-ai" class="magnetic-btn">Generate Hypothesis</button>
+                </div>
+            </div>
+        </section>
+
+        <section id="cta" class="perspective-container">
+            <div class="cta-content parallax-layer reveal" data-speed="0.1">
+                <h2 class="glitch" data-text="RECLAIM HUMAN THOUGHT">RECLAIM HUMAN THOUGHT</h2>
+                <p>The tool must remain a tool, not a crutch.</p>
+                <button class="magnetic-btn cta-btn">
+                    <span>Access Manifesto</span>
+                    <div class="btn-glow"></div>
+                </button>
+            </div>
+        </section>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+</html>
