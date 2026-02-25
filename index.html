@@ -11,134 +11,1188 @@
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;600;700&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    
+    <style>
+        /* ==========================================================================
+           1. CSS VARIABLES & DESIGN TOKENS
+           ========================================================================== */
+        :root {
+            /* Core Colors */
+            --bg-color: #03050a;
+            --bg-color-light: #0a0f1a;
+            --cyan: #00f0ff;
+            --cyan-dim: rgba(0, 240, 255, 0.5);
+            --purple: #8a2be2;
+            --purple-dim: rgba(138, 43, 226, 0.5);
+            --pink: #ff007f;
+            
+            /* Typography Colors */
+            --text-main: #e2e8f0;
+            --text-muted: #8b9bb4;
+            --text-dark: #4a5568;
+            
+            /* Glassmorphism Variables */
+            --glass-bg: rgba(16, 22, 40, 0.4);
+            --glass-bg-hover: rgba(25, 35, 60, 0.6);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --glass-border-highlight: rgba(0, 240, 255, 0.3);
+            
+            /* Effects */
+            --neon-glow: 0 0 20px rgba(0, 240, 255, 0.3);
+            --neon-glow-strong: 0 0 40px rgba(0, 240, 255, 0.6);
+            --box-shadow-depth: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+            
+            /* Typography Families */
+            --font-head: 'Space Grotesk', sans-serif;
+            --font-body: 'Inter', sans-serif;
+            
+            /* Transitions */
+            --transition-smooth: 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            --transition-fast: 0.3s ease;
+        }
+
+        /* ==========================================================================
+           2. RESET & BASE STYLES
+           ========================================================================== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            width: 100%;
+            min-height: 100vh;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: var(--font-body);
+            overflow-x: hidden;
+            scroll-behavior: smooth;
+            overscroll-behavior: none;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: var(--bg-color);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: var(--glass-border);
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--cyan-dim);
+        }
+
+        ::selection {
+            background: var(--cyan);
+            color: #000;
+        }
+
+        /* ==========================================================================
+           3. GLOBAL OVERLAYS & CANVAS
+           ========================================================================== */
+        #noise-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            pointer-events: none;
+            z-index: 9999;
+            background: url('data:image/svg+xml;utf8,%3Csvg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"%3E%3Cfilter id="noiseFilter"%3E%3CfeTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="3" stitchTiles="stitch"/%3E%3C/filter%3E%3Crect width="100%25" height="100%25" filter="url(%23noiseFilter)"/%3E%3C/svg%3E');
+            opacity: 0.03;
+        }
+
+        #cursor-glow {
+            position: fixed;
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, rgba(138,43,226,0.15) 0%, rgba(0,240,255,0.05) 40%, transparent 70%);
+            border-radius: 50%;
+            pointer-events: none;
+            transform: translate(-50%, -50%);
+            z-index: 0;
+            mix-blend-mode: screen;
+            transition: width 0.3s, height 0.3s;
+        }
+
+        /* Neural Network Canvas */
+        #neural-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
+            opacity: 0.4;
+        }
+
+        /* ==========================================================================
+           4. TYPOGRAPHY
+           ========================================================================== */
+        h1, h2, h3, h4, h5, h6, .logo {
+            font-family: var(--font-head);
+            text-transform: uppercase;
+            letter-spacing: -0.03em;
+            line-height: 1.1;
+        }
+
+        p {
+            line-height: 1.6;
+            margin-bottom: 1rem;
+        }
+
+        a {
+            color: var(--cyan);
+            text-decoration: none;
+            transition: var(--transition-fast);
+        }
+
+        /* ==========================================================================
+           5. NAVIGATION
+           ========================================================================== */
+        .glass-nav {
+            position: fixed;
+            top: 0; left: 0; width: 100%;
+            padding: 1.5rem 4rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 100;
+            background: rgba(3, 5, 10, 0.6);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--glass-border);
+            transition: padding 0.4s ease, background 0.4s ease;
+        }
+
+        .glass-nav.scrolled {
+            padding: 1rem 4rem;
+            background: rgba(3, 5, 10, 0.85);
+        }
+
+        .logo {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo-accent {
+            color: var(--cyan);
+            text-shadow: 0 0 10px rgba(0, 240, 255, 0.4);
+            animation: pulse-glow 2s infinite alternate;
+        }
+
+        @keyframes pulse-glow {
+            0% { text-shadow: 0 0 10px rgba(0, 240, 255, 0.2); }
+            100% { text-shadow: 0 0 20px rgba(0, 240, 255, 0.8); }
+        }
+
+        .nav-links {
+            list-style: none;
+            display: flex;
+            gap: 2.5rem;
+        }
+
+        .nav-links a {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            font-weight: 600;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            position: relative;
+            padding-bottom: 5px;
+        }
+
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0%;
+            height: 2px;
+            background: var(--cyan);
+            transition: width 0.3s ease;
+        }
+
+        .nav-links a:hover {
+            color: var(--text-main);
+        }
+
+        .nav-links a:hover::after {
+            width: 100%;
+        }
+
+        /* ==========================================================================
+           6. LAYOUT & PERSPECTIVE CONTAINERS
+           ========================================================================== */
+        .perspective-container {
+            perspective: 1200px;
+            transform-style: preserve-3d;
+            position: relative;
+            padding: 12rem 5%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            z-index: 1;
+        }
+
+        /* ==========================================================================
+           7. HERO SECTION
+           ========================================================================== */
+        #hero {
+            overflow: hidden;
+            justify-content: center;
+        }
+
+        .grid-floor {
+            position: absolute;
+            bottom: -60%; left: -50%;
+            width: 200%; height: 200%;
+            background-image: 
+                linear-gradient(rgba(0, 240, 255, 0.15) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 240, 255, 0.15) 1px, transparent 1px);
+            background-size: 80px 80px;
+            transform: rotateX(75deg) translateZ(-200px);
+            animation: gridScroll 12s linear infinite;
+            mask-image: linear-gradient(to top, black 10%, transparent 60%);
+            -webkit-mask-image: linear-gradient(to top, black 10%, transparent 60%);
+            z-index: -1;
+        }
+
+        @keyframes gridScroll {
+            0% { transform: rotateX(75deg) translateZ(-200px) translateY(0); }
+            100% { transform: rotateX(75deg) translateZ(-200px) translateY(80px); }
+        }
+
+        .hero-content {
+            text-align: center;
+            transform: translateZ(80px);
+            max-width: 1000px;
+        }
+
+        .hero-badge {
+            display: inline-block;
+            padding: 0.5rem 1.5rem;
+            border: 1px solid var(--glass-border);
+            border-radius: 50px;
+            font-size: 0.8rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--cyan);
+            background: rgba(0, 240, 255, 0.05);
+            margin-bottom: 2rem;
+            backdrop-filter: blur(10px);
+        }
+
+        .hero-title {
+            font-size: clamp(4rem, 10vw, 9rem);
+            line-height: 0.95;
+            margin-bottom: 1.5rem;
+            position: relative;
+            font-weight: 700;
+        }
+
+        .gradient-text {
+            background: linear-gradient(135deg, #ffffff 0%, #8b9bb4 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: inline-block;
+        }
+
+        .blink {
+            animation: blinker 1s step-start infinite;
+            color: var(--cyan);
+            font-weight: 300;
+        }
+
+        @keyframes blinker { 50% { opacity: 0; } }
+
+        .typewriter-text {
+            font-size: clamp(1rem, 2vw, 1.4rem);
+            color: var(--cyan);
+            height: 2rem;
+            margin-bottom: 5rem;
+            font-family: var(--font-head);
+            letter-spacing: 0.05em;
+            text-shadow: 0 0 10px rgba(0, 240, 255, 0.2);
+        }
+
+        .scroll-indicator {
+            position: absolute;
+            bottom: 3rem;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.2em;
+            opacity: 0.7;
+            transition: opacity 0.3s;
+        }
+
+        .scroll-indicator:hover {
+            opacity: 1;
+        }
+
+        .mouse {
+            width: 30px; height: 46px;
+            border: 2px solid var(--text-muted);
+            border-radius: 20px;
+            position: relative;
+        }
+
+        .wheel {
+            width: 4px; height: 10px;
+            background: var(--cyan);
+            border-radius: 2px;
+            position: absolute;
+            top: 8px; left: 50%;
+            transform: translateX(-50%);
+            animation: scrollWheel 2s infinite cubic-bezier(0.15, 0.41, 0.69, 0.94);
+        }
+
+        @keyframes scrollWheel {
+            0% { top: 8px; opacity: 1; }
+            100% { top: 24px; opacity: 0; }
+        }
+
+        /* ==========================================================================
+           8. SECTION HEADERS
+           ========================================================================== */
+        .section-header {
+            text-align: center;
+            margin-bottom: 6rem;
+            transform: translateZ(30px);
+            position: relative;
+            z-index: 2;
+        }
+
+        .section-header .chapter {
+            color: var(--cyan);
+            font-family: monospace;
+            font-size: 1rem;
+            letter-spacing: 0.2em;
+            margin-bottom: 1rem;
+            display: block;
+        }
+
+        .section-header h2 {
+            font-size: clamp(2.5rem, 5vw, 4rem);
+            color: #fff;
+            margin-bottom: 1.5rem;
+            text-shadow: var(--box-shadow-depth);
+        }
+
+        .section-header p {
+            color: var(--text-muted);
+            font-size: 1.2rem;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* ==========================================================================
+           9. CARDS & GLASSMORPHISM (THE SHIFT)
+           ========================================================================== */
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 2.5rem;
+            width: 100%;
+            max-width: 1300px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .glass-panel {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 3rem;
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            position: relative;
+            overflow: hidden;
+            box-shadow: var(--box-shadow-depth);
+            transition: background 0.4s ease, border-color 0.4s ease;
+        }
+
+        .glass-panel:hover {
+            background: var(--glass-bg-hover);
+            border-color: var(--glass-border-highlight);
+        }
+
+        .tilt-card {
+            transition: transform 0.1s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            will-change: transform;
+            transform-style: preserve-3d;
+        }
+
+        .card-glow {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(circle at center, rgba(0, 240, 255, 0.15) 0%, transparent 60%);
+            opacity: 0;
+            transition: opacity 0.4s ease;
+            pointer-events: none;
+            mix-blend-mode: screen;
+        }
+
+        .tilt-card:hover .card-glow { opacity: 1; }
+
+        .icon-3d {
+            font-size: 3.5rem;
+            margin-bottom: 2rem;
+            transform: translateZ(50px);
+            display: inline-block;
+            filter: drop-shadow(0 10px 10px rgba(0,0,0,0.5));
+        }
+
+        .tilt-card h3 {
+            font-size: 1.8rem;
+            margin-bottom: 1rem;
+            color: #fff;
+            transform: translateZ(40px);
+        }
+
+        .tilt-card p {
+            color: var(--text-muted);
+            line-height: 1.7;
+            font-size: 1.05rem;
+            transform: translateZ(25px);
+        }
+
+        /* ==========================================================================
+           10. DATA & METRICS SECTION
+           ========================================================================== */
+        #data {
+            position: relative;
+            padding: 12rem 5%;
+        }
+
+        .bg-sphere {
+            position: absolute;
+            top: 50%; left: 50%;
+            width: 800px; height: 800px;
+            background: radial-gradient(circle, rgba(138,43,226,0.15) 0%, transparent 60%);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            filter: blur(60px);
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .stats-container {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 2rem;
+            position: relative;
+            z-index: 1;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .stat-box {
+            background: linear-gradient(180deg, rgba(255,255,255,0.04) 0%, rgba(0,0,0,0.2) 100%);
+            border-top: 1px solid rgba(255,255,255,0.1);
+            border-radius: 16px;
+            padding: 4rem 3rem;
+            text-align: center;
+            flex: 1;
+            min-width: 300px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+        }
+
+        .stat-number {
+            font-family: var(--font-head);
+            font-size: 6rem;
+            font-weight: 700;
+            color: var(--cyan);
+            display: inline-block;
+            text-shadow: var(--neon-glow);
+            transform: translateZ(60px);
+            line-height: 1;
+        }
+
+        .percent {
+            font-size: 2.5rem;
+            color: var(--cyan);
+            vertical-align: top;
+            line-height: 2;
+            font-weight: 300;
+        }
+
+        .stat-box p {
+            margin-top: 1.5rem;
+            font-size: 1.1rem;
+            color: var(--text-main);
+        }
+
+        .progress-3d {
+            width: 100%;
+            height: 8px;
+            background: rgba(255,255,255,0.05);
+            margin-top: 2.5rem;
+            border-radius: 4px;
+            overflow: hidden;
+            position: relative;
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.5);
+        }
+
+        .progress-3d .bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--purple), var(--cyan));
+            width: 0;
+            transition: width 2s cubic-bezier(0.22, 1, 0.36, 1);
+            box-shadow: 0 0 15px var(--cyan);
+            border-radius: 4px;
+        }
+
+        /* ==========================================================================
+           11. TIMELINE SECTION (EVOLUTION OF THOUGHT)
+           ========================================================================== */
+        .timeline-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            position: relative;
+            padding: 2rem 0;
+        }
+
+        .timeline-container::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 50%;
+            width: 2px; height: 100%;
+            background: linear-gradient(to bottom, transparent, var(--cyan), var(--purple), transparent);
+            transform: translateX(-50%);
+        }
+
+        .timeline-item {
+            display: flex;
+            justify-content: flex-end;
+            padding-right: 50%;
+            position: relative;
+            margin-bottom: 4rem;
+        }
+
+        .timeline-item:nth-child(even) {
+            justify-content: flex-start;
+            padding-right: 0;
+            padding-left: 50%;
+        }
+
+        .timeline-content {
+            width: 80%;
+            padding: 2rem;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            position: relative;
+            backdrop-filter: blur(10px);
+        }
+
+        .timeline-item:nth-child(odd) .timeline-content {
+            margin-right: 2rem;
+        }
+        
+        .timeline-item:nth-child(even) .timeline-content {
+            margin-left: 2rem;
+        }
+
+        .timeline-dot {
+            position: absolute;
+            top: 50%; right: -30px;
+            width: 20px; height: 20px;
+            background: var(--bg-color);
+            border: 3px solid var(--cyan);
+            border-radius: 50%;
+            transform: translateY(-50%);
+            box-shadow: 0 0 15px var(--cyan);
+            z-index: 2;
+        }
+
+        .timeline-item:nth-child(even) .timeline-dot {
+            right: auto;
+            left: -30px;
+        }
+
+        .timeline-year {
+            font-family: monospace;
+            color: var(--cyan);
+            font-size: 1.2rem;
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+
+        /* ==========================================================================
+           12. SLIDER & TESTIMONIALS (VOICES)
+           ========================================================================== */
+        .slider-wrapper {
+            width: 100%;
+            overflow: hidden;
+            padding: 2rem 0;
+        }
+
+        .slider-container {
+            width: 100%;
+            max-width: 900px;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        .slider-track {
+            display: flex;
+            transition: transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+
+        .testimonial-card {
+            min-width: 100%;
+            padding: 4rem 5rem;
+            text-align: center;
+        }
+
+        .quote-mark {
+            font-size: 4rem;
+            color: var(--glass-border);
+            font-family: Georgia, serif;
+            line-height: 0;
+            margin-bottom: 2rem;
+            display: block;
+        }
+
+        .quote {
+            font-size: clamp(1.5rem, 3vw, 2rem);
+            font-weight: 300;
+            margin-bottom: 3rem;
+            line-height: 1.5;
+            color: #fff;
+        }
+
+        .author {
+            color: var(--cyan);
+            font-weight: 600;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .author::before, .author::after {
+            content: '';
+            width: 30px;
+            height: 1px;
+            background: var(--glass-border);
+        }
+
+        .slider-controls {
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        /* ==========================================================================
+           13. BUTTONS & INTERACTIVE ELEMENTS
+           ========================================================================== */
+        .magnetic-btn {
+            background: transparent;
+            border: 1px solid rgba(0, 240, 255, 0.3);
+            color: #fff;
+            padding: 1.2rem 2.5rem;
+            border-radius: 40px;
+            cursor: pointer;
+            font-family: var(--font-head);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(5px);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+        }
+
+        .magnetic-btn::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--cyan);
+            transform: scaleX(0);
+            transform-origin: right;
+            transition: transform 0.5s cubic-bezier(0.19, 1, 0.22, 1);
+            z-index: -1;
+        }
+
+        .magnetic-btn:hover {
+            color: #000;
+            border-color: var(--cyan);
+            box-shadow: 0 0 20px rgba(0, 240, 255, 0.4);
+        }
+
+        .magnetic-btn:hover::before {
+            transform: scaleX(1);
+            transform-origin: left;
+        }
+
+        /* ==========================================================================
+           14. TERMINAL INTERFACE
+           ========================================================================== */
+        .terminal-interface {
+            width: 100%;
+            max-width: 850px;
+            background: #05070a;
+            border: 1px solid #1f2937;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 30px 60px rgba(0,0,0,0.8), 0 0 0 1px rgba(255,255,255,0.05);
+            margin: 0 auto;
+        }
+
+        .terminal-header {
+            background: #0f141e;
+            padding: 1rem 1.5rem;
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid #1f2937;
+        }
+
+        .dots span {
+            display: inline-block;
+            width: 12px; height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        .dots span:nth-child(1) { background: #ff5f56; }
+        .dots span:nth-child(2) { background: #ffbd2e; }
+        .dots span:nth-child(3) { background: #27c93f; }
+
+        .terminal-title {
+            margin: 0 auto;
+            font-family: monospace;
+            color: #8b9bb4;
+            font-size: 0.85rem;
+            letter-spacing: 0.1em;
+        }
+
+        .terminal-body {
+            padding: 2.5rem;
+            height: 350px;
+            overflow-y: auto;
+            font-family: 'Courier New', Courier, monospace;
+            color: var(--cyan);
+            font-size: 1.1rem;
+            line-height: 1.6;
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+        }
+
+        /* Terminal Scrollbar */
+        .terminal-body::-webkit-scrollbar { width: 6px; }
+        .terminal-body::-webkit-scrollbar-track { background: transparent; }
+        .terminal-body::-webkit-scrollbar-thumb { background: #1f2937; border-radius: 3px; }
+
+        .terminal-body .sys { color: #6b7280; }
+        .terminal-body .user { color: #fff; }
+        .terminal-body .warning { color: #f59e0b; }
+        .terminal-body .critical { color: #ef4444; }
+
+        .terminal-input-area {
+            padding: 1.5rem 2.5rem;
+            background: #0a0e14;
+            border-top: 1px solid #1f2937;
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        /* ==========================================================================
+           15. CALL TO ACTION & GLITCH EFFECTS
+           ========================================================================== */
+        #cta {
+            text-align: center;
+            padding-bottom: 5rem;
+        }
+
+        .glitch {
+            font-size: clamp(3rem, 7vw, 7rem);
+            position: relative;
+            color: white;
+            margin-bottom: 2rem;
+            font-weight: 700;
+            line-height: 1;
+        }
+
+        .glitch::before, .glitch::after {
+            content: attr(data-text);
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: var(--bg-color);
+        }
+
+        .glitch::before {
+            left: 3px;
+            text-shadow: -2px 0 var(--pink);
+            clip: rect(24px, 550px, 90px, 0);
+            animation: glitch-anim-2 3s infinite linear alternate-reverse;
+        }
+        
+        .glitch::after {
+            left: -3px;
+            text-shadow: -2px 0 var(--cyan);
+            clip: rect(85px, 550px, 140px, 0);
+            animation: glitch-anim 2.5s infinite linear alternate-reverse;
+        }
+
+        @keyframes glitch-anim {
+            0% { clip: rect(10px, 9999px, 81px, 0); }
+            5% { clip: rect(70px, 9999px, 11px, 0); }
+            10% { clip: rect(30px, 9999px, 90px, 0); }
+            15% { clip: rect(90px, 9999px, 20px, 0); }
+            20% { clip: rect(10px, 9999px, 81px, 0); }
+            100% { clip: rect(10px, 9999px, 81px, 0); }
+        }
+        
+        @keyframes glitch-anim-2 {
+            0% { clip: rect(65px, 9999px, 100px, 0); }
+            5% { clip: rect(20px, 9999px, 50px, 0); }
+            10% { clip: rect(80px, 9999px, 10px, 0); }
+            15% { clip: rect(10px, 9999px, 90px, 0); }
+            20% { clip: rect(65px, 9999px, 100px, 0); }
+            100% { clip: rect(65px, 9999px, 100px, 0); }
+        }
+
+        .cta-subtitle {
+            font-size: 1.5rem;
+            color: var(--text-muted);
+            margin-bottom: 4rem;
+        }
+
+        .cta-btn {
+            font-size: 1.2rem;
+            padding: 1.5rem 4rem;
+            background: #fff;
+            color: #000;
+            border: none;
+        }
+
+        .cta-btn::before {
+            background: var(--pink);
+        }
+
+        .cta-btn:hover {
+            color: #fff;
+            box-shadow: 0 0 30px rgba(255, 0, 127, 0.5);
+            border: none;
+        }
+
+        /* ==========================================================================
+           16. FOOTER
+           ========================================================================== */
+        footer {
+            border-top: 1px solid #1f2937;
+            padding: 4rem 5%;
+            background: #010204;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+            z-index: 10;
+        }
+
+        .footer-logo {
+            font-family: var(--font-head);
+            font-weight: 700;
+            font-size: 1.5rem;
+            color: #fff;
+        }
+
+        .footer-links {
+            display: flex;
+            gap: 2rem;
+        }
+
+        .footer-links a {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
+        .footer-links a:hover {
+            color: var(--cyan);
+        }
+
+        .copyright {
+            color: #4a5568;
+            font-size: 0.85rem;
+            width: 100%;
+            text-align: center;
+            margin-top: 3rem;
+        }
+
+        /* ==========================================================================
+           17. ANIMATIONS & REVEALS
+           ========================================================================== */
+        .reveal {
+            opacity: 0;
+            transform: translateY(60px) translateZ(0);
+            transition: all 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+
+        .reveal.active {
+            opacity: 1;
+            transform: translateY(0) translateZ(0);
+        }
+
+        .reveal-left { transform: translateX(-60px) translateZ(0); }
+        .reveal-right { transform: translateX(60px) translateZ(0); }
+        
+        .reveal-left.active, .reveal-right.active {
+            opacity: 1;
+            transform: translateX(0) translateZ(0);
+        }
+
+        /* ==========================================================================
+           18. RESPONSIVE MEDIA QUERIES
+           ========================================================================== */
+        @media (max-width: 1024px) {
+            .perspective-container { padding: 8rem 5%; }
+            .timeline-container::before { left: 40px; }
+            .timeline-item { justify-content: flex-end; padding-right: 0; padding-left: 100px; margin-bottom: 2rem; }
+            .timeline-item:nth-child(even) { justify-content: flex-end; padding-left: 100px; }
+            .timeline-content { width: 100%; }
+            .timeline-item:nth-child(odd) .timeline-content, .timeline-item:nth-child(even) .timeline-content { margin: 0; }
+            .timeline-dot { left: 30px !important; right: auto !important; }
+        }
+
+        @media (max-width: 768px) {
+            .glass-nav { padding: 1.5rem; flex-direction: column; gap: 1rem; }
+            .glass-nav.scrolled { padding: 1rem; }
+            .nav-links { gap: 1rem; flex-wrap: wrap; justify-content: center; }
+            .hero-title { font-size: 3rem; }
+            .stat-box { min-width: 100%; }
+            .testimonial-card { padding: 2rem 1rem; }
+            .quote { font-size: 1.2rem; }
+            .glitch { font-size: 2.5rem; }
+            .footer-links { flex-direction: column; align-items: center; gap: 1rem; margin-top: 2rem; width: 100%; }
+        }
+    </style>
 </head>
 <body>
+
     <div id="noise-overlay"></div>
     <div id="cursor-glow"></div>
+    <canvas id="neural-canvas"></canvas>
 
-    <nav class="glass-nav">
-        <div class="logo">LS // AI</div>
+    <nav class="glass-nav" id="navbar">
+        <div class="logo">LS <span class="logo-accent">//</span> AI</div>
         <ul class="nav-links">
+            <li><a href="#hero">Genesis</a></li>
             <li><a href="#shift">The Shift</a></li>
             <li><a href="#data">Impact</a></li>
+            <li><a href="#timeline">Evolution</a></li>
             <li><a href="#voices">Voices</a></li>
-            <li><a href="#future">Future</a></li>
+            <li><a href="#interactive">Terminal</a></li>
         </ul>
     </nav>
 
     <main>
         <header id="hero" class="perspective-container">
             <div class="grid-floor"></div>
-            <div class="hero-content parallax-layer" data-speed="0.2">
-                <h1 class="hero-title">
+            <div class="hero-content parallax-layer" data-speed="0.25">
+                <div class="hero-badge reveal active">System Status: Human Override Required</div>
+                <h1 class="hero-title reveal active" data-delay="100">
                     <span class="gradient-text">THE LEARNING</span><br>
                     SHIFT<span class="blink">_</span>
                 </h1>
                 <p class="typewriter-text" id="typewriter"></p>
-                <div class="scroll-indicator">
-                    <span>Explore Data</span>
+                
+                <div class="scroll-indicator reveal active" data-delay="600">
+                    <span>Initialize Sequence</span>
                     <div class="mouse">
                         <div class="wheel"></div>
                     </div>
                 </div>
             </div>
-            <div class="floating-particles" id="particles"></div>
         </header>
 
         <section id="shift" class="perspective-container">
             <div class="section-header reveal">
-                <h2>01. COGNITIVE OFFLOADING</h2>
-                <p>Are we augmenting intelligence, or outsourcing thought?</p>
+                <span class="chapter">01 // COGNITIVE OFFLOADING</span>
+                <h2>THE OUTSOURCED MIND</h2>
+                <p>Are we augmenting our intelligence, or are we slowly outsourcing the very friction required to build genuine human thought?</p>
             </div>
+            
             <div class="card-grid">
-                <div class="tilt-card glass-panel reveal" data-delay="100">
+                <div class="tilt-card glass-panel reveal" data-delay="0">
                     <div class="card-glow"></div>
                     <div class="icon-3d">🧠</div>
-                    <h3>The Outsource Effect</h3>
-                    <p>As students rely on LLMs for synthesis, neural pathways for critical analysis risk atrophy. We are trading deep comprehension for rapid output.</p>
+                    <h3>The Neural Atrophy</h3>
+                    <p>As students increasingly rely on Large Language Models for synthesis and logic, the neural pathways responsible for deep critical analysis risk severe atrophy. We are trading long-term comprehension for short-term, rapid output.</p>
                 </div>
-                <div class="tilt-card glass-panel reveal" data-delay="200">
+                
+                <div class="tilt-card glass-panel reveal" data-delay="150">
                     <div class="card-glow"></div>
                     <div class="icon-3d">⚡</div>
                     <h3>Frictionless Illusion</h3>
-                    <p>Learning requires friction. AI removes the struggle of blank pages, inadvertently masking the necessary pain of genuine skill acquisition.</p>
+                    <p>Genuine learning inherently requires friction. AI completely removes the struggle of the blank page, inadvertently masking the necessary psychological pain of authentic skill acquisition.</p>
                 </div>
+                
                 <div class="tilt-card glass-panel reveal" data-delay="300">
                     <div class="card-glow"></div>
                     <div class="icon-3d">👁️</div>
                     <h3>Algorithmic Echoes</h3>
-                    <p>Homogenization of thought. When a generation relies on identical systemic weights to draft essays, unique human voice degrades.</p>
+                    <p>The homogenization of human thought. When an entire generation relies on identical systemic weights and biases to draft essays and solve problems, the unique human voice degrades into a predictable echo.</p>
                 </div>
             </div>
         </section>
 
-        <section id="data" class="parallax-section">
-            <div class="bg-sphere parallax-layer" data-speed="-0.1"></div>
+        <section id="data" class="parallax-section perspective-container" style="padding: 5rem 5%;">
+            <div class="bg-sphere parallax-layer" data-speed="-0.15"></div>
+            
             <div class="section-header reveal">
-                <h2>02. THE METRICS OF DEPENDENCE</h2>
+                <span class="chapter">02 // THE METRICS OF DEPENDENCE</span>
+                <h2>QUANTIFYING THE SHIFT</h2>
             </div>
+            
             <div class="stats-container">
-                <div class="stat-box tilt-card reveal">
+                <div class="stat-box tilt-card reveal reveal-left">
                     <div class="stat-number" data-target="82">0</div><span class="percent">%</span>
-                    <p>Students use generative AI weekly for coursework</p>
                     <div class="progress-3d"><div class="bar" data-width="82%"></div></div>
+                    <p>Of university students utilize generative AI weekly to complete core academic coursework.</p>
                 </div>
-                <div class="stat-box tilt-card reveal" data-delay="150">
+                
+                <div class="stat-box tilt-card reveal" data-delay="200">
                     <div class="stat-number" data-target="64">0</div><span class="percent">%</span>
-                    <p>Report decreased confidence in independent writing</p>
                     <div class="progress-3d"><div class="bar" data-width="64%"></div></div>
+                    <p>Report significantly decreased confidence in independent writing and problem-solving without AI assistance.</p>
                 </div>
-                <div class="stat-box tilt-card reveal" data-delay="300">
-                    <div class="stat-number" data-target="3x">0</div><span class="percent">x</span>
-                    <p>Increase in AI-assisted academic submissions YoY</p>
+                
+                <div class="stat-box tilt-card reveal reveal-right" data-delay="400">
+                    <div class="stat-number" data-target="300">0</div><span class="percent">%</span>
                     <div class="progress-3d"><div class="bar" data-width="100%"></div></div>
+                    <p>Increase in identical structural phrasing found in academic submissions year-over-year.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="timeline" class="perspective-container">
+            <div class="section-header reveal">
+                <span class="chapter">03 // TIMELINE DEGRADATION</span>
+                <h2>THE EVOLUTION OF RELIANCE</h2>
+            </div>
+
+            <div class="timeline-container">
+                <div class="timeline-item reveal">
+                    <div class="timeline-dot"></div>
+                    <div class="timeline-content tilt-card">
+                        <span class="timeline-year">STAGE I : AUGMENTATION (2022)</span>
+                        <h3>The Calculator Phase</h3>
+                        <p>AI is utilized strictly for syntax correction, grammar checking, and basic structural outlines. The human remains the primary architect of the core idea.</p>
+                    </div>
+                </div>
+
+                <div class="timeline-item reveal">
+                    <div class="timeline-dot"></div>
+                    <div class="timeline-content tilt-card">
+                        <span class="timeline-year">STAGE II : CO-CREATION (2024)</span>
+                        <h3>The Synthesis Phase</h3>
+                        <p>Students begin prompting AI to generate paragraphs and core arguments. The human role shifts from 'Creator' to 'Editor', merely refining the machine's output.</p>
+                    </div>
+                </div>
+
+                <div class="timeline-item reveal">
+                    <div class="timeline-dot"></div>
+                    <div class="timeline-content tilt-card">
+                        <span class="timeline-year">STAGE III : DEPENDENCE (2026)</span>
+                        <h3>The Automation Phase</h3>
+                        <p>Prompting replaces thinking. Entire methodologies, codebases, and essays are generated zero-shot. The human role is reduced to merely 'Approving' the output.</p>
+                    </div>
                 </div>
             </div>
         </section>
 
         <section id="voices" class="perspective-container">
             <div class="section-header reveal">
-                <h2>03. THE FRONTLINE</h2>
+                <span class="chapter">04 // THE FRONTLINE</span>
+                <h2>ECHOES FROM THE CLASSROOM</h2>
             </div>
-            <div class="slider-container reveal">
-                <div class="slider-track" id="testimonial-slider">
-                    <div class="testimonial-card glass-panel">
-                        <p class="quote">"I don't know how to start an essay anymore without asking for an outline first. The blank page terrifies me now."</p>
-                        <span class="author">— Undergrad, Literature</span>
+            
+            <div class="slider-wrapper reveal">
+                <div class="slider-container">
+                    <div class="slider-track" id="testimonial-slider">
+                        
+                        <div class="testimonial-card glass-panel tilt-card">
+                            <span class="quote-mark">"</span>
+                            <p class="quote">I don't know how to start an essay anymore without asking for an outline first. The blank page absolutely terrifies me now. It feels like I've forgotten how to walk without crutches.</p>
+                            <span class="author">Undergrad, Literature</span>
+                        </div>
+                        
+                        <div class="testimonial-card glass-panel tilt-card">
+                            <span class="quote-mark">"</span>
+                            <p class="quote">It's like having a calculator for words. But unlike math, where you know the formula, I feel like I'm forgetting how the formula of logic actually works in my head.</p>
+                            <span class="author">High School Senior</span>
+                        </div>
+                        
+                        <div class="testimonial-card glass-panel tilt-card">
+                            <span class="quote-mark">"</span>
+                            <p class="quote">I use it to debug code instantly. Yes, I build features 10x faster, but if the internet goes down, I realize I understand the deep architecture significantly less than I did a year ago.</p>
+                            <span class="author">CS Major, Year 3</span>
+                        </div>
+
                     </div>
-                    <div class="testimonial-card glass-panel">
-                        <p class="quote">"It's like having a calculator for words. But unlike math, I feel like I'm forgetting how the formula actually works."</p>
-                        <span class="author">— High School Senior</span>
+                    
+                    <div class="slider-controls">
+                        <button id="prev-btn" class="magnetic-btn" aria-label="Previous">❮ PREV</button>
+                        <button id="next-btn" class="magnetic-btn" aria-label="Next">NEXT ❯</button>
                     </div>
-                    <div class="testimonial-card glass-panel">
-                        <p class="quote">"I use it to debug code instantly. I build faster, but I understand the deep architecture significantly less."</p>
-                        <span class="author">— CS Major, Year 3</span>
-                    </div>
-                </div>
-                <div class="slider-controls">
-                    <button id="prev-btn" class="magnetic-btn" aria-label="Previous">❮</button>
-                    <button id="next-btn" class="magnetic-btn" aria-label="Next">❯</button>
                 </div>
             </div>
         </section>
 
         <section id="interactive" class="perspective-container">
             <div class="section-header reveal">
-                <h2>04. SIMULATED SYNTHESIS</h2>
-                <p>Interact with the localized neural core.</p>
+                <span class="chapter">05 // SIMULATED SYNTHESIS</span>
+                <h2>INTERACT WITH THE CORE</h2>
+                <p>Observe the localized neural engine simulate critical thought.</p>
             </div>
+            
             <div class="terminal-interface tilt-card reveal">
                 <div class="terminal-header">
                     <div class="dots"><span></span><span></span><span></span></div>
-                    <div class="terminal-title">SYNTHESIS_ENGINE_v4</div>
+                    <div class="terminal-title">SYNTHESIS_ENGINE_v4.2.1 // ROOT ACCESS</div>
                 </div>
+                
                 <div class="terminal-body" id="terminal-body">
-                    <div class="line sys">System initialized. Waiting for input...</div>
+                    <div class="line sys">Initializing boot sequence...</div>
+                    <div class="line sys">Neural weights loaded: 175B parameters.</div>
+                    <div class="line sys">System initialized. Awaiting user prompt...</div>
                 </div>
+                
                 <div class="terminal-input-area">
-                    <button id="trigger-ai" class="magnetic-btn">Generate Hypothesis</button>
+                    <button id="trigger-ai" class="magnetic-btn">Execute Logic Inject</button>
                 </div>
             </div>
         </section>
@@ -146,15 +1200,437 @@
         <section id="cta" class="perspective-container">
             <div class="cta-content parallax-layer reveal" data-speed="0.1">
                 <h2 class="glitch" data-text="RECLAIM HUMAN THOUGHT">RECLAIM HUMAN THOUGHT</h2>
-                <p>The tool must remain a tool, not a crutch.</p>
+                <p class="cta-subtitle">The algorithm must remain a tool, not a cognitive crutch.</p>
+                
                 <button class="magnetic-btn cta-btn">
-                    <span>Access Manifesto</span>
-                    <div class="btn-glow"></div>
+                    <span>Access The Manifesto</span>
                 </button>
             </div>
         </section>
     </main>
 
-    <script src="script.js"></script>
+    <footer>
+        <div class="footer-logo">LS <span style="color:var(--cyan)">//</span> AI</div>
+        
+        <div class="footer-links">
+            <a href="#">About the Project</a>
+            <a href="#">Methodology</a>
+            <a href="#">Academic Sources</a>
+            <a href="#">Contact Core</a>
+        </div>
+        
+        <div class="copyright">
+            &copy; 2026 The Learning Shift Initiative. Built with pure syntax. No frameworks attached.
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            
+            /* --------------------------------------------------------------------------
+               1. CUSTOM CURSOR GLOW
+               -------------------------------------------------------------------------- */
+            const cursorGlow = document.getElementById('cursor-glow');
+            
+            document.addEventListener('mousemove', (e) => {
+                requestAnimationFrame(() => {
+                    cursorGlow.style.left = `${e.clientX}px`;
+                    cursorGlow.style.top = `${e.clientY}px`;
+                });
+            });
+
+            // Expand glow on clickable items
+            document.querySelectorAll('a, button, .tilt-card').forEach(el => {
+                el.addEventListener('mouseenter', () => {
+                    cursorGlow.style.transform = 'translate(-50%, -50%) scale(1.8)';
+                    cursorGlow.style.background = 'radial-gradient(circle, rgba(0,240,255,0.15) 0%, rgba(138,43,226,0.05) 40%, transparent 70%)';
+                });
+                el.addEventListener('mouseleave', () => {
+                    cursorGlow.style.transform = 'translate(-50%, -50%) scale(1)';
+                    cursorGlow.style.background = 'radial-gradient(circle, rgba(138,43,226,0.15) 0%, rgba(0,240,255,0.05) 40%, transparent 70%)';
+                });
+            });
+
+            /* --------------------------------------------------------------------------
+               2. NEURAL NETWORK CANVAS BACKGROUND (PURE VANILLA JS)
+               -------------------------------------------------------------------------- */
+            const canvas = document.getElementById('neural-canvas');
+            const ctx = canvas.getContext('2d');
+            let width, height;
+            let particles = [];
+            
+            // Mouse object for interaction
+            let mouse = { x: null, y: null, radius: 150 };
+
+            window.addEventListener('mousemove', (e) => {
+                mouse.x = e.x;
+                mouse.y = e.y;
+            });
+
+            function resize() {
+                width = canvas.width = window.innerWidth;
+                height = canvas.height = window.innerHeight;
+            }
+            window.addEventListener('resize', resize);
+            resize();
+
+            class Particle {
+                constructor() {
+                    this.x = Math.random() * width;
+                    this.y = Math.random() * height;
+                    this.vx = (Math.random() - 0.5) * 0.5;
+                    this.vy = (Math.random() - 0.5) * 0.5;
+                    this.radius = Math.random() * 2 + 1;
+                }
+                update() {
+                    this.x += this.vx;
+                    this.y += this.vy;
+                    // Bounce off edges
+                    if (this.x < 0 || this.x > width) this.vx = -this.vx;
+                    if (this.y < 0 || this.y > height) this.vy = -this.vy;
+                }
+                draw() {
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                    ctx.fillStyle = 'rgba(0, 240, 255, 0.5)';
+                    ctx.fill();
+                }
+            }
+
+            function initParticles() {
+                particles = [];
+                // Amount of particles depends on screen size to maintain performance
+                let numParticles = (width * height) / 15000;
+                for (let i = 0; i < numParticles; i++) {
+                    particles.push(new Particle());
+                }
+            }
+            initParticles();
+
+            function animateCanvas() {
+                ctx.clearRect(0, 0, width, height);
+                
+                for (let i = 0; i < particles.length; i++) {
+                    particles[i].update();
+                    particles[i].draw();
+                    
+                    // Connect particles to each other
+                    for (let j = i; j < particles.length; j++) {
+                        let dx = particles[i].x - particles[j].x;
+                        let dy = particles[i].y - particles[j].y;
+                        let distance = Math.sqrt(dx * dx + dy * dy);
+                        
+                        if (distance < 100) {
+                            ctx.beginPath();
+                            ctx.strokeStyle = `rgba(0, 240, 255, ${1 - distance/100})`;
+                            ctx.lineWidth = 0.5;
+                            ctx.moveTo(particles[i].x, particles[i].y);
+                            ctx.lineTo(particles[j].x, particles[j].y);
+                            ctx.stroke();
+                        }
+                    }
+
+                    // Connect particles to mouse
+                    if (mouse.x != null) {
+                        let dxMouse = particles[i].x - mouse.x;
+                        let dyMouse = particles[i].y - mouse.y;
+                        let distanceMouse = Math.sqrt(dxMouse*dxMouse + dyMouse*dyMouse);
+                        if (distanceMouse < mouse.radius) {
+                            ctx.beginPath();
+                            ctx.strokeStyle = `rgba(138, 43, 226, ${1 - distanceMouse/mouse.radius})`;
+                            ctx.lineWidth = 1;
+                            ctx.moveTo(particles[i].x, particles[i].y);
+                            ctx.lineTo(mouse.x, mouse.y);
+                            ctx.stroke();
+                        }
+                    }
+                }
+                requestAnimationFrame(animateCanvas);
+            }
+            animateCanvas();
+
+            /* --------------------------------------------------------------------------
+               3. TYPEWRITER EFFECT
+               -------------------------------------------------------------------------- */
+            const textArray = [
+                "Intelligence is being augmented.",
+                "Cognition is being offloaded.",
+                "Are we learning, or just querying?",
+                "The algorithm is watching.",
+                "The shift is happening right now."
+            ];
+            let textIndex = 0;
+            let charIndex = 0;
+            let isDeleting = false;
+            const typeElement = document.getElementById('typewriter');
+
+            function type() {
+                const currentText = textArray[textIndex];
+                if (isDeleting) {
+                    typeElement.textContent = currentText.substring(0, charIndex - 1);
+                    charIndex--;
+                } else {
+                    typeElement.textContent = currentText.substring(0, charIndex + 1);
+                    charIndex++;
+                }
+
+                let typeSpeed = isDeleting ? 30 : 80;
+
+                if (!isDeleting && charIndex === currentText.length) {
+                    typeSpeed = 2500; // Pause at end of sentence
+                    isDeleting = true;
+                } else if (isDeleting && charIndex === 0) {
+                    isDeleting = false;
+                    textIndex = (textIndex + 1) % textArray.length;
+                    typeSpeed = 500; // Pause before next word
+                }
+
+                setTimeout(type, typeSpeed);
+            }
+            type();
+
+            /* --------------------------------------------------------------------------
+               4. 3D TILT EFFECT (MOUSE PARALLAX)
+               -------------------------------------------------------------------------- */
+            const tiltCards = document.querySelectorAll('.tilt-card');
+            
+            tiltCards.forEach(card => {
+                card.addEventListener('mousemove', (e) => {
+                    const rect = card.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
+                    const centerX = rect.width / 2;
+                    const centerY = rect.height / 2;
+                    
+                    // Calculate rotation degrees based on mouse position
+                    const rotateX = ((y - centerY) / centerY) * -8;
+                    const rotateY = ((x - centerX) / centerX) * 8;
+
+                    card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.02, 1.02, 1.02)`;
+                });
+
+                card.addEventListener('mouseleave', () => {
+                    // Reset smoothly
+                    card.style.transform = `perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)`;
+                });
+            });
+
+            /* --------------------------------------------------------------------------
+               5. MAGNETIC BUTTONS
+               -------------------------------------------------------------------------- */
+            const magneticBtns = document.querySelectorAll('.magnetic-btn');
+            
+            magneticBtns.forEach(btn => {
+                btn.addEventListener('mousemove', (e) => {
+                    const rect = btn.getBoundingClientRect();
+                    const x = e.clientX - rect.left - rect.width / 2;
+                    const y = e.clientY - rect.top - rect.height / 2;
+                    // Move button slightly towards mouse
+                    btn.style.transform = `translate(${x * 0.2}px, ${y * 0.2}px)`;
+                });
+                
+                btn.addEventListener('mouseleave', () => {
+                    // Snap back
+                    btn.style.transform = 'translate(0px, 0px)';
+                });
+            });
+
+            /* --------------------------------------------------------------------------
+               6. INTERSECTION OBSERVER (SCROLL REVEALS & ANIMATIONS)
+               -------------------------------------------------------------------------- */
+            const reveals = document.querySelectorAll('.reveal');
+            const parallaxLayers = document.querySelectorAll('.parallax-layer');
+            const navbar = document.getElementById('navbar');
+            
+            const observerOptions = {
+                root: null,
+                rootMargin: '0px',
+                threshold: 0.15
+            };
+
+            const revealObserver = new IntersectionObserver((entries, observer) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const delay = entry.target.getAttribute('data-delay') || 0;
+                        
+                        setTimeout(() => {
+                            entry.target.classList.add('active');
+                            
+                            // Trigger progress bars & counters if inside stats section
+                            if(entry.target.classList.contains('stat-box')) {
+                                const bar = entry.target.querySelector('.bar');
+                                if(bar) bar.style.width = bar.getAttribute('data-width');
+                                
+                                const numTarget = entry.target.querySelector('.stat-number');
+                                if(numTarget && numTarget.innerText === '0') {
+                                    animateValue(numTarget, 0, parseInt(numTarget.getAttribute('data-target')), 2500);
+                                }
+                            }
+                        }, delay);
+                        
+                        observer.unobserve(entry.target); // Only animate once
+                    }
+                });
+            }, observerOptions);
+
+            reveals.forEach(reveal => revealObserver.observe(reveal));
+
+            /* --------------------------------------------------------------------------
+               7. SMOOTH PARALLAX & NAV BAR LISTENER
+               -------------------------------------------------------------------------- */
+            let lastKnownScrollPosition = 0;
+            let ticking = false;
+
+            window.addEventListener('scroll', () => {
+                lastKnownScrollPosition = window.scrollY;
+                
+                // Navbar style change on scroll
+                if(lastKnownScrollPosition > 50) {
+                    navbar.classList.add('scrolled');
+                } else {
+                    navbar.classList.remove('scrolled');
+                }
+
+                if (!ticking) {
+                    window.requestAnimationFrame(() => {
+                        parallaxLayers.forEach(layer => {
+                            const speed = layer.getAttribute('data-speed');
+                            const yPos = -(lastKnownScrollPosition * speed);
+                            layer.style.transform = `translate3d(0, ${yPos}px, 0)`;
+                        });
+                        ticking = false;
+                    });
+                    ticking = true;
+                }
+            });
+
+            /* --------------------------------------------------------------------------
+               8. NUMBER COUNTER ENGINE
+               -------------------------------------------------------------------------- */
+            function animateValue(obj, start, end, duration) {
+                let startTimestamp = null;
+                const step = (timestamp) => {
+                    if (!startTimestamp) startTimestamp = timestamp;
+                    const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+                    
+                    // Calculate easing out
+                    const easeOutQuart = 1 - Math.pow(1 - progress, 4);
+                    const currentVal = Math.floor(easeOutQuart * (end - start) + start);
+                    
+                    obj.innerHTML = currentVal;
+                    
+                    if (progress < 1) {
+                        window.requestAnimationFrame(step);
+                    } else {
+                        obj.innerHTML = end; // Ensure exact final value
+                    }
+                };
+                window.requestAnimationFrame(step);
+            }
+
+            /* --------------------------------------------------------------------------
+               9. TESTIMONIAL SLIDER LOGIC
+               -------------------------------------------------------------------------- */
+            const track = document.getElementById('testimonial-slider');
+            const prevBtn = document.getElementById('prev-btn');
+            const nextBtn = document.getElementById('next-btn');
+            const cards = document.querySelectorAll('.testimonial-card');
+            let currentIndex = 0;
+            
+            function updateSlider() {
+                track.style.transform = `translateX(-${currentIndex * 100}%)`;
+            }
+
+            nextBtn.addEventListener('click', () => {
+                if(currentIndex < cards.length - 1) currentIndex++;
+                else currentIndex = 0; // Loop back
+                updateSlider();
+            });
+
+            prevBtn.addEventListener('click', () => {
+                if(currentIndex > 0) currentIndex--;
+                else currentIndex = cards.length - 1; // Loop end
+                updateSlider();
+            });
+
+            /* --------------------------------------------------------------------------
+               10. INTERACTIVE TERMINAL ENGINE
+               -------------------------------------------------------------------------- */
+            const triggerBtn = document.getElementById('trigger-ai');
+            const terminalBody = document.getElementById('terminal-body');
+            
+            // Scripted response tree for the terminal
+            const aiResponses = [
+                { type: 'user', text: "> Requesting dependency analysis..." },
+                { type: 'sys', text: "Parsing educational paradigm...", delay: 600 },
+                { type: 'sys', text: "Bypassing standard neural retrieval.", delay: 800 },
+                { type: 'warning', text: "WARNING: High levels of cognitive offloading detected.", delay: 1200 },
+                { type: 'sys', text: "Synthesizing argument based on historical datasets...", delay: 1800 },
+                { type: 'critical', text: "OUTPUT: Human cognitive independence is declining at 14% YoY.", delay: 2500 },
+                { type: 'user', text: "> Query: Resolution?" },
+                { type: 'sys', text: "Calculating optimal growth vectors...", delay: 800 },
+                { type: 'sys', text: "Result: Re-introduce friction into learning environments.", delay: 1500 },
+                { type: 'sys', text: "Awaiting next command...", delay: 2000 }
+            ];
+            
+            let currentResponseIndex = 0;
+            let isTyping = false;
+
+            triggerBtn.addEventListener('click', () => {
+                if (isTyping || currentResponseIndex >= aiResponses.length) return;
+                
+                isTyping = true;
+                triggerBtn.disabled = true;
+                triggerBtn.style.opacity = '0.4';
+                triggerBtn.innerText = "PROCESSING...";
+
+                function processNextLine() {
+                    if (currentResponseIndex >= aiResponses.length) {
+                        isTyping = false;
+                        triggerBtn.innerText = "SYSTEM HALTED";
+                        return;
+                    }
+
+                    const data = aiResponses[currentResponseIndex];
+                    
+                    // If user command, append immediately
+                    if (data.type === 'user') {
+                        appendLine(data.text, 'user');
+                        currentResponseIndex++;
+                        processNextLine();
+                    } else {
+                        // If system, wait for delay
+                        setTimeout(() => {
+                            appendLine(data.text, data.type);
+                            currentResponseIndex++;
+                            
+                            // If next line is a user line, stop and wait for button click again
+                            if (currentResponseIndex < aiResponses.length && aiResponses[currentResponseIndex].type === 'user') {
+                                isTyping = false;
+                                triggerBtn.disabled = false;
+                                triggerBtn.style.opacity = '1';
+                                triggerBtn.innerText = "Query Solution";
+                            } else {
+                                processNextLine();
+                            }
+                        }, data.delay || 500);
+                    }
+                }
+
+                processNextLine();
+            });
+
+            function appendLine(text, className) {
+                const line = document.createElement('div');
+                line.className = `line ${className}`;
+                line.textContent = text;
+                terminalBody.appendChild(line);
+                
+                // Auto scroll to bottom
+                terminalBody.scrollTop = terminalBody.scrollHeight;
+            }
+            
+        });
+    </script>
 </body>
 </html>
